@@ -59,7 +59,8 @@ export interface IncomeW2 {
 export enum Income1099Type {
   B = 'B',
   INT = 'INT',
-  DIV = 'DIV'
+  DIV = 'DIV',
+  G = 'G'
 }
 
 export interface F1099BData {
@@ -78,11 +79,17 @@ export interface F1099DivData {
   qualifiedDividends: number
 }
 
+export interface F1099GData {
+  unemploymentCompensation?: number
+  taxableRefunds?: number
+}
+
 export interface Income1099<T, D> {
   payer: string
   type: T
   form: D
   personRole: PersonRole.PRIMARY | PersonRole.SPOUSE
+  fedWithholding?: number
 }
 
 export enum FilingStatus {
@@ -137,11 +144,13 @@ export interface TaxPayer extends ContactInfo {
 export type Income1099Int = Income1099<Income1099Type.INT, F1099IntData>
 export type Income1099B = Income1099<Income1099Type.B, F1099BData>
 export type Income1099Div = Income1099<Income1099Type.DIV, F1099DivData>
+export type Income1099G = Income1099<Income1099Type.G, F1099GData>
 
 export type Supported1099 =
   Income1099Int
   | Income1099B
   | Income1099Div
+  | Income1099G
 
 export interface Information {
   f1099s: Supported1099[]

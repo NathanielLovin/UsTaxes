@@ -27,6 +27,11 @@ const showIncome = (a: Supported1099): ReactElement => {
     case Income1099Type.DIV: {
       return <Currency value={a.form.dividends} />
     }
+    case Income1099Type.G: {
+      const unemployment = a.form.unemploymentCompensation !== undefined ? a.form.unemploymentCompensation : 0
+      const refund = a.form.taxableRefunds !== undefined ? a.form.taxableRefunds : 0
+      return <Currency value={unemployment + refund} />
+    }
   }
 }
 
@@ -77,6 +82,7 @@ function List1099s (): ReactElement {
 interface F1099UserInput {
   formType: Income1099Type
   payer: string
+  fedWithholding: string
   // Int fields
   interest: string
   // B Fields
@@ -88,6 +94,9 @@ interface F1099UserInput {
   dividends: string
   qualifiedDividends: string
   personRole: PersonRole.PRIMARY | PersonRole.SPOUSE
+  // G fields
+  unemploymentCompensation: string
+  taxableRefunds: string
 }
 
 const toF1099 = (input: F1099UserInput): Supported1099 => {
@@ -99,7 +108,8 @@ const toF1099 = (input: F1099UserInput): Supported1099 => {
         type: input.formType,
         form: {
           income: parseInt(input.interest)
-        }
+        },
+        fedWithholding: parseInt(input.fedWithholding)
       }
     }
     case Income1099Type.B: {
@@ -112,7 +122,8 @@ const toF1099 = (input: F1099UserInput): Supported1099 => {
           shortTermProceeds: parseInt(input.shortTermProceeds),
           longTermCostBasis: parseInt(input.longTermCostBasis),
           longTermProceeds: parseInt(input.longTermProceeds)
-        }
+        },
+        fedWithholding: parseInt(input.fedWithholding)
       }
     }
     case Income1099Type.DIV: {
@@ -123,7 +134,20 @@ const toF1099 = (input: F1099UserInput): Supported1099 => {
         form: {
           dividends: parseInt(input.dividends),
           qualifiedDividends: parseInt(input.qualifiedDividends)
-        }
+        },
+        fedWithholding: parseInt(input.fedWithholding)
+      }
+    }
+    case Income1099Type.G: {
+      return {
+        payer: input.payer,
+        personRole: input.personRole,
+        type: input.formType,
+        form: {
+          unemploymentCompensation: parseInt(input.unemploymentCompensation),
+          taxableRefunds: parseInt(input.taxableRefunds)
+        },
+        fedWithholding: parseInt(input.fedWithholding)
       }
     }
   }
@@ -232,10 +256,32 @@ export default function F1099Info (): ReactElement {
     </div>
   )
 
+  const gFields = (
+  <div>
+    <LabeledInput
+      label="Unemployment compensation"
+      register={register}
+      required={false}
+      patternConfig={Patterns.currency(control)}
+      name="unemploymentCompensation"
+      error={errors.unemploymentCompensation}
+    />
+    <LabeledInput
+      label="State or local income tax refunds, credits, or offsets"
+      register={register}
+      required={false}
+      patternConfig={Patterns.currency(control)}
+      name="taxableRefunds"
+      error={errors.taxableRefunds}
+    />
+  </div>
+  )
+
   const specificFields = {
     [Income1099Type.INT]: intFields,
     [Income1099Type.B]: bFields,
-    [Income1099Type.DIV]: divFields
+    [Income1099Type.DIV]: divFields,
+    [Income1099Type.G]: gFields
   }
 
   let form: ReactElement | undefined
@@ -259,16 +305,25 @@ export default function F1099Info (): ReactElement {
           defaultValue={undefined}
         />
 
-        <LabeledInput
+        {selectedType !== Income1099Type.G && <LabeledInput
           label="Enter name of bank, broker firm, or other payer"
           register={register}
           required={true}
           patternConfig={Patterns.name}
           name="payer"
           error={errors.payer}
-        />
+        />}
 
         {specificFields[selectedType]}
+
+        <LabeledInput
+          label="Federal Tax withheld"
+          register={register}
+          required={false}
+          patternConfig={Patterns.currency(control)}
+          name="fedWithholding"
+          error={errors.fedWithholding}
+        />
 
         <GenericLabeledDropdown
           dropDownData={people}
