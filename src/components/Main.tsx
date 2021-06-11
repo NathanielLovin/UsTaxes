@@ -15,6 +15,7 @@ import SpouseAndDependent from './TaxPayer/SpouseAndDependent'
 import ContactInfo from './TaxPayer/ContactInfo'
 import FilingStatusSelect from './TaxPayer/FilingStatus'
 import F1099Info from './income/F1099Info'
+// import AdditionalIncome from './income/AdditionalIncome'
 
 const theme = createMuiTheme({
   palette: {
@@ -66,6 +67,7 @@ const drawerSections: Section[] = [
     items: [
       item('Wages (W2)', Urls.income.w2s, <W2JobInfo />),
       item('Income (1099)', Urls.income.f1099s, <F1099Info />)
+      // item('Additional Income and Adjustments', Urls.income.additional <AdditionalIncome />)
     ]
   },
   {
